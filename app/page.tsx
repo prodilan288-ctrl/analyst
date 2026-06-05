@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import ReachChartWrapper from "./components/ReachChartWrapper";
 import ReelsTable from "./components/ReelsTable";
+import InsightsPanel from "./components/InsightsPanel";
 import type { ReelRow } from "./components/ReelsTable";
 
 export const dynamic_param = "force-dynamic";
@@ -57,6 +58,11 @@ export default async function DashboardPage() {
         <div className="border border-[#2a2a2a] bg-[#1c1c1c] p-6">
           <ReachChartWrapper data={chartData} />
         </div>
+      </section>
+
+      {/* AI Insights */}
+      <section className="mb-10">
+        <InsightsPanel />
       </section>
 
       {/* Reels */}
