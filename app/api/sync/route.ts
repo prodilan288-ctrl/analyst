@@ -1,11 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
 const BASE = "https://graph.facebook.com/v25.0";
 // /me/accounts returns empty — page is in a Meta Business Portfolio, bypass by ID
 const PAGE_ID = "1203359669524673";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get("authorization");
+  const isVercelCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+  const isLocalhost = request.headers.get("host")?.includes("localhost");
+
+  if (!isVercelCron && !isLocalhost) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const token = process.env.INSTAGRAM_ACCESS_TOKEN!;
   const igId = process.env.IG_ACCOUNT_ID!;
   const errors: string[] = [];
