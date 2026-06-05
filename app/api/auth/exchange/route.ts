@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     access_token: longData.access_token,
+    expires_in_raw: longData.expires_in,
     expires_in_days: Math.round((longData.expires_in ?? 0) / 86400),
     token_type: longData.token_type,
     next_step: "Copy access_token into .env.local as INSTAGRAM_ACCESS_TOKEN and update the Vercel env var",
