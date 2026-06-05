@@ -89,7 +89,7 @@ type ColDef = {
   render: (r: ReelRow) => React.ReactNode;
 };
 
-const n = (v: number | null) => (v != null ? v.toLocaleString() : "—");
+const n = (v: number | null) => (v != null ? v.toLocaleString("en-US") : "—");
 const watchMs = (ms: number | null) => (ms != null ? `${(ms / 1000).toFixed(1)}s` : "—");
 const postDate = (iso: string | null) =>
   iso

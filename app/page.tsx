@@ -46,10 +46,10 @@ export default async function DashboardPage() {
 
       {/* Overview */}
       <div className="grid grid-cols-2 gap-3 mb-10 md:grid-cols-4">
-        <StatCard label="Followers" value={latest?.followers?.toLocaleString() ?? "—"} />
-        <StatCard label="7-Day Reach" value={sevenDayReach.toLocaleString()} />
-        <StatCard label="Profile Views" sub="7-day" value={latest?.profile_views?.toLocaleString() ?? "—"} accent />
-        <StatCard label="Accounts Engaged" sub="7-day" value={latest?.accounts_engaged?.toLocaleString() ?? "—"} accent />
+        <StatCard label="Followers" value={latest?.followers?.toLocaleString("en-US") ?? "—"} />
+        <StatCard label="7-Day Reach" value={sevenDayReach.toLocaleString("en-US")} />
+        <StatCard label="Profile Views" sub="7-day" value={latest?.profile_views?.toLocaleString("en-US") ?? "—"} accent />
+        <StatCard label="Accounts Engaged" sub="7-day" value={latest?.accounts_engaged?.toLocaleString("en-US") ?? "—"} accent />
       </div>
 
       {/* Reach chart */}

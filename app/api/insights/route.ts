@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Anthropic from "@anthropic-ai/sdk";
 import { supabase } from "@/lib/supabase";
 
 const PROMPT = `You are an analytics assistant for a music producer's Instagram content strategy.
@@ -16,9 +16,9 @@ patterns: max 3 observations about what content performs best for this account.
 recommendation: one concrete action to take this week.`;
 
 export async function GET() {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: "GEMINI_API_KEY not set" }, { status: 500 });
+    return NextResponse.json({ error: "ANTHROPIC_API_KEY not set" }, { status: 500 });
   }
 
   // Latest snapshot date
@@ -43,7 +43,6 @@ export async function GET() {
     return NextResponse.json({ error: error?.message ?? "No data" }, { status: 500 });
   }
 
-  // Build compact data payload for Gemini
   const reelData = rows.map((r) => {
     const meta = r.reels as unknown as { ig_media_id: string; caption: string | null; format: string | null; funnel_stage: string | null };
     return {
@@ -60,18 +59,33 @@ export async function GET() {
     };
   });
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const client = new Anthropic({ apiKey });
 
-  const result = await model.generateContent(
-    `${PROMPT}\n\nReel data:\n${JSON.stringify(reelData, null, 2)}`,
-  );
-  const raw = result.response.text().trim();
+  let raw: string;
+  try {
+    const response = await client.messages.create({
+      model: "claude-haiku-4-5",
+      max_tokens: 1024,
+      messages: [
+        {
+          role: "user",
+          content: `${PROMPT}\n\nReel data:\n${JSON.stringify(reelData, null, 2)}`,
+        },
+      ],
+    });
+    const block = response.content[0];
+    raw = block.type === "text" ? block.text.trim() : "";
+  } catch (e) {
+    return NextResponse.json(
+      { error: "Anthropic request failed", detail: e instanceof Error ? e.message : String(e) },
+      { status: 500 },
+    );
+  }
 
   try {
     const parsed = JSON.parse(raw);
     return NextResponse.json(parsed);
   } catch {
-    return NextResponse.json({ error: "Failed to parse Gemini response", raw }, { status: 500 });
+    return NextResponse.json({ error: "Failed to parse Anthropic response", raw }, { status: 500 });
   }
 }
