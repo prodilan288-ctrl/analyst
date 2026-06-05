@@ -30,7 +30,8 @@ export async function GET(request: NextRequest) {
     `${BASE}/${igId}?fields=followers_count&access_token=${token}`,
   );
   const followersData = await followersRes.json();
-  if (followersData.error) errors.push(`followers: ${followersData.error.message}`);
+  const followersErr = followersData.error ?? null;
+  if (followersErr) errors.push(`followers [${followersRes.status}]: ${JSON.stringify(followersErr)}`);
   const followers: number | null = followersData.followers_count ?? null;
 
   // Step 2: daily reach series — all 7 values, each has end_time for its date
@@ -38,7 +39,8 @@ export async function GET(request: NextRequest) {
     `${BASE}/${igId}/insights?metric=reach&period=day&since=${sevenDaysAgo}&until=${now}&access_token=${token}`,
   );
   const reachData = await reachRes.json();
-  if (reachData.error) errors.push(`reach: ${reachData.error.message}`);
+  const reachErr = reachData.error ?? null;
+  if (reachErr) errors.push(`reach [${reachRes.status}]: ${JSON.stringify(reachErr)}`);
   const reachValues: { value: number; end_time: string }[] = reachData.data?.[0]?.values ?? [];
   const todayReach = reachValues.length > 0 ? reachValues[reachValues.length - 1].value : null;
 
@@ -47,13 +49,13 @@ export async function GET(request: NextRequest) {
     `${BASE}/${igId}/insights?metric=profile_views,accounts_engaged&period=day&metric_type=total_value&since=${sevenDaysAgo}&until=${now}&access_token=${token}`,
   );
   const totalValueData = await totalValueRes.json();
-  if (totalValueData.error) errors.push(`total_value: ${totalValueData.error.message}`);
+  const totalValueErr = totalValueData.error ?? null;
+  if (totalValueErr) errors.push(`total_value [${totalValueRes.status}]: ${JSON.stringify(totalValueErr)}`);
   const findTotal = (name: string) =>
     totalValueData.data?.find((m: { name: string }) => m.name === name)?.total_value?.value ?? null;
   const profileViews = findTotal("profile_views");
   const accountsEngaged = findTotal("accounts_engaged");
 
-  // Also surface what was actually fetched for debugging
   const ig_debug = { followers, todayReach, profileViews, accountsEngaged, reachValueCount: reachValues.length };
 
   // Step 4a: backfill each day in the reach series
@@ -81,7 +83,8 @@ export async function GET(request: NextRequest) {
     `${BASE}/${igId}/media?fields=id,caption,permalink,thumbnail_url,timestamp,media_type&limit=50&access_token=${token}`,
   );
   const mediaData = await mediaRes.json();
-  if (mediaData.error) errors.push(`media: ${mediaData.error.message}`);
+  const mediaErr = mediaData.error ?? null;
+  if (mediaErr) errors.push(`media [${mediaRes.status}]: ${JSON.stringify(mediaErr)}`);
   const reels = (mediaData.data ?? []).filter((m: { media_type: string }) => m.media_type === "VIDEO");
 
   let reelsSynced = 0;
