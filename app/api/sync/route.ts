@@ -14,6 +14,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (!process.env.INSTAGRAM_ACCESS_TOKEN) {
+    return NextResponse.json({ error: "INSTAGRAM_ACCESS_TOKEN not set" }, { status: 500 });
+  }
+
   const token = process.env.INSTAGRAM_ACCESS_TOKEN!;
   const igId = process.env.IG_ACCOUNT_ID!;
   const errors: string[] = [];
