@@ -1,19 +1,31 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
+import { z } from "zod";
 import { supabase } from "@/lib/supabase";
 
-const PROMPT = `You are an analytics assistant for a music producer's Instagram content strategy.
+const InsightsSchema = z.object({
+  outliers: z.array(
+    z.object({
+      ig_media_id: z.string(),
+      caption_preview: z.string(),
+      reason: z.string(),
+    }),
+  ),
+  patterns: z.array(z.string()),
+  recommendation: z.string(),
+});
+
+const SYSTEM = `You are an analytics assistant for a music producer's Instagram content strategy.
 The producer's goal is qualified DMs from serious artists — not follower count or raw views.
-The real ICP signals are saves and watch time.
-Analyze the reel performance data and return JSON only, no markdown, no backticks, no prose:
-{
-  "outliers": [{ "ig_media_id": "string", "caption_preview": "string", "reason": "string" }],
-  "patterns": ["string"],
-  "recommendation": "string"
-}
-outliers: max 3 reels significantly above average saves or watch time.
-patterns: max 3 observations about what content performs best for this account.
-recommendation: one concrete action to take this week.`;
+The real ICP signals are saves and watch time.`;
+
+const USER_PROMPT = `Analyze this reel performance data and return insights:
+- outliers: max 3 reels significantly above average saves or watch time
+- patterns: max 3 observations about what content performs best
+- recommendation: one concrete action to take this week
+
+Reel data:`;
 
 export async function GET() {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -21,7 +33,6 @@ export async function GET() {
     return NextResponse.json({ error: "ANTHROPIC_API_KEY not set" }, { status: 500 });
   }
 
-  // Latest snapshot date
   const { data: latestDateRow } = await supabase
     .from("reel_snapshots")
     .select("captured_on")
@@ -33,7 +44,6 @@ export async function GET() {
     return NextResponse.json({ error: "No reel snapshots found" }, { status: 404 });
   }
 
-  // All reel snapshots for that date joined with reel metadata
   const { data: rows, error } = await supabase
     .from("reel_snapshots")
     .select("views, reach, saved, shares, comments, avg_watch_time, reels!inner(ig_media_id, caption, format, funnel_stage)")
@@ -61,31 +71,31 @@ export async function GET() {
 
   const client = new Anthropic({ apiKey });
 
-  let raw: string;
   try {
-    const response = await client.messages.create({
+    const response = await client.messages.parse({
       model: "claude-haiku-4-5",
       max_tokens: 1024,
+      system: SYSTEM,
       messages: [
         {
           role: "user",
-          content: `${PROMPT}\n\nReel data:\n${JSON.stringify(reelData, null, 2)}`,
+          content: `${USER_PROMPT}\n${JSON.stringify(reelData, null, 2)}`,
         },
       ],
+      output_config: {
+        format: zodOutputFormat(InsightsSchema, "insights"),
+      },
     });
-    const block = response.content[0];
-    raw = block.type === "text" ? block.text.trim() : "";
+
+    if (!response.parsed_output) {
+      return NextResponse.json({ error: "No structured output returned" }, { status: 500 });
+    }
+
+    return NextResponse.json(response.parsed_output);
   } catch (e) {
     return NextResponse.json(
       { error: "Anthropic request failed", detail: e instanceof Error ? e.message : String(e) },
       { status: 500 },
     );
-  }
-
-  try {
-    const parsed = JSON.parse(raw);
-    return NextResponse.json(parsed);
-  } catch {
-    return NextResponse.json({ error: "Failed to parse Anthropic response", raw }, { status: 500 });
   }
 }
