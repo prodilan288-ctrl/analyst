@@ -83,7 +83,7 @@ export async function GET() {
         },
       ],
       output_config: {
-        format: zodOutputFormat(InsightsSchema, "insights"),
+        format: zodOutputFormat(InsightsSchema),
       },
     });
 
