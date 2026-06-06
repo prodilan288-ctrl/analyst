@@ -79,26 +79,29 @@ export async function GET() {
 
   const { data: rows, error } = await supabase
     .from("reel_snapshots")
-    .select("views, reach, saved, shares, comments, avg_watch_time, reels!inner(ig_media_id, caption, format, funnel_stage)")
-    .eq("captured_on", latestDateRow.captured_on);
+    .select("views, reach, saved, shares, comments, avg_watch_time, reels!inner(ig_media_id, caption, posted_at, format, funnel_stage)")
+    .eq("captured_on", latestDateRow.captured_on)
+    .order("saved", { ascending: false })
+    .limit(30);
 
   if (error || !rows?.length) {
     return NextResponse.json({ error: error?.message ?? "No data" }, { status: 500 });
   }
 
   const reelData = rows.map((r) => {
-    const meta = r.reels as unknown as { ig_media_id: string; caption: string | null; format: string | null; funnel_stage: string | null };
+    const meta = r.reels as unknown as { ig_media_id: string; caption: string | null; posted_at: string | null; format: string | null; funnel_stage: string | null };
     return {
       ig_media_id: meta.ig_media_id,
-      caption_preview: (meta.caption ?? "").slice(0, 80),
-      format: meta.format,
-      funnel_stage: meta.funnel_stage,
+      caption: (meta.caption ?? "").slice(0, 60),
+      posted_at: meta.posted_at?.split("T")[0] ?? null,
       views: r.views,
       reach: r.reach,
       saved: r.saved,
       shares: r.shares,
       comments: r.comments,
-      avg_watch_time_s: r.avg_watch_time != null ? Math.round(r.avg_watch_time / 1000) : null,
+      avg_watch_time: r.avg_watch_time,
+      format: meta.format,
+      funnel_stage: meta.funnel_stage,
     };
   });
 
