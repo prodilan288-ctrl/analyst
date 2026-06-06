@@ -5,10 +5,10 @@ import { useState, useCallback } from "react";
 const FORMAT_OPTIONS = ["viral", "yap", "cookup", "pov", "placement"];
 const STAGE_OPTIONS = ["TOFU", "MOFU", "BOFU"];
 
-const STAGE_COLORS: Record<string, string> = {
-  TOFU: "text-teal-400",
-  MOFU: "text-violet-400",
-  BOFU: "text-amber-400",
+const STAGE_SELECT_STYLES: Record<string, string> = {
+  TOFU: "bg-teal-950 border-teal-800 text-teal-400",
+  MOFU: "bg-violet-950 border-violet-800 text-violet-400",
+  BOFU: "bg-amber-950 border-amber-800 text-amber-400",
 };
 
 function TagSelect({
@@ -26,24 +26,25 @@ function TagSelect({
   onSave: (igMediaId: string, field: "format" | "funnel_stage", value: string | null) => void;
   flashing: boolean;
 }) {
-  const colorClass =
-    field === "funnel_stage" && value
-      ? (STAGE_COLORS[value] ?? "text-zinc-300")
-      : value
-        ? "text-zinc-300"
-        : "text-zinc-500";
+  let activeStyle: string;
+  if (field === "funnel_stage" && value) {
+    activeStyle = STAGE_SELECT_STYLES[value] ?? "bg-zinc-800 border-zinc-700 text-zinc-300";
+  } else if (field === "format" && value) {
+    activeStyle = "bg-zinc-800 border-zinc-700 text-zinc-400";
+  } else {
+    activeStyle = "bg-[#1a1a1a] border-zinc-700 text-zinc-500";
+  }
 
   return (
     <select
       value={value ?? ""}
       onChange={(e) => onSave(igMediaId, field, e.target.value || null)}
       className={[
-        "text-[11px] px-1.5 py-0.5 rounded-none cursor-pointer outline-none",
+        "text-[11px] px-1.5 py-0.5 rounded cursor-pointer outline-none",
         "border transition-colors duration-150",
-        "bg-[#1c1c1c]",
         flashing
           ? "border-green-600 bg-green-950/40 text-green-400"
-          : `border-zinc-700 hover:border-zinc-500 ${colorClass}`,
+          : `${activeStyle} hover:brightness-125`,
       ].join(" ")}
     >
       <option value="" className="bg-[#1c1c1c] text-zinc-500">—</option>
@@ -205,9 +206,9 @@ export default function ReelsTable({ reels }: { reels: ReelRow[] }) {
   });
 
   return (
-    <div className="border border-zinc-800 overflow-x-auto">
+    <div className="border border-[#2a2a2a] overflow-x-auto">
       <table className="w-full text-sm border-collapse">
-        <thead className="bg-[#1c1c1c]">
+        <thead className="bg-[#1a1a1a] sticky top-0 z-10">
           <tr className="border-b border-zinc-800">
             <th className="p-3 text-left w-20 text-[10px] uppercase tracking-[0.15em] text-zinc-400 font-normal">
               Thumb
@@ -245,7 +246,7 @@ export default function ReelsTable({ reels }: { reels: ReelRow[] }) {
             <tr
               key={row.reel_id}
               className={[
-                "border-b border-zinc-800/40 transition-colors hover:bg-[#222222]",
+                "border-b border-zinc-800/40 transition-colors hover:bg-[#1e1e1e]",
                 i % 2 !== 0 ? "bg-[#171717]" : "bg-[#141414]",
               ].join(" ")}
             >
@@ -275,7 +276,7 @@ export default function ReelsTable({ reels }: { reels: ReelRow[] }) {
               {COLUMNS.map((c) => (
                 <td
                   key={c.key}
-                  className={`p-3 tabular-nums${c.icp ? " bg-amber-950/40" : ""}`}
+                  className={`p-3 tabular-nums${c.icp ? " bg-amber-950/30" : ""}`}
                 >
                   {c.render(row)}
                 </td>

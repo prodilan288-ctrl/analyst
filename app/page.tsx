@@ -39,8 +39,8 @@ export default async function DashboardPage() {
     : { data: [] };
 
   return (
-    <main className="min-h-screen bg-[#0f0f0f] text-white px-8 py-10">
-      <p className="text-[10px] uppercase tracking-[0.25em] text-zinc-600 mb-10">
+    <main className="min-h-screen bg-[#111111] text-white px-8 py-10">
+      <p className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 mb-10">
         prod.ilan_ / analytics
       </p>
 
@@ -55,7 +55,7 @@ export default async function DashboardPage() {
       {/* Reach chart */}
       <section className="mb-10">
         <Label>Daily Reach — Last 7 Days</Label>
-        <div className="border border-[#2a2a2a] bg-[#1c1c1c] p-6">
+        <div className="border border-[#2a2a2a] bg-[#1a1a1a] p-6">
           <ReachChartWrapper data={chartData} />
         </div>
       </section>
@@ -76,16 +76,16 @@ export default async function DashboardPage() {
 
 function StatCard({ label, sub, value, accent }: { label: string; sub?: string; value: string; accent?: boolean }) {
   return (
-    <div className={`border bg-[#1c1c1c] p-5 ${accent ? "border-l-2 border-l-amber-400 border-t-[#2a2a2a] border-r-[#2a2a2a] border-b-[#2a2a2a]" : "border-[#2a2a2a]"}`}>
+    <div className={`border bg-[#1a1a1a] p-5 ${accent ? "border-l-2 border-l-amber-400 border-t-[#2a2a2a] border-r-[#2a2a2a] border-b-[#2a2a2a]" : "border-[#2a2a2a]"}`}>
       <p className="text-[10px] uppercase tracking-[0.15em] text-zinc-400">
         {label}
         {sub && <span className="ml-1 text-zinc-600">({sub})</span>}
       </p>
-      <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-white">{value}</p>
+      <p className="mt-2 text-4xl font-semibold tabular-nums tracking-tight text-white">{value}</p>
     </div>
   );
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 mb-3">{children}</p>;
+  return <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-3">{children}</p>;
 }

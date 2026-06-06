@@ -80,7 +80,7 @@ export default function InsightsPanel() {
   useEffect(() => { fetch_(); }, [fetch_]);
 
   return (
-    <div className="border border-[#2a2a2a] bg-[#1c1c1c] p-6">
+    <div className="border border-[#2a2a2a] bg-[#1a1a1a] p-6">
       <div className="flex items-center justify-between mb-6">
         <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500">AI Insights</p>
         <button
@@ -103,17 +103,17 @@ export default function InsightsPanel() {
 
           {/* Outliers */}
           <div>
-            <p className="text-[10px] uppercase tracking-[0.15em] text-zinc-600 mb-3">Top Performers</p>
+            <p className="text-[10px] uppercase tracking-[0.15em] text-zinc-500 mb-3">Top Performers</p>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               {data.outliers.map((o) => (
-                <div key={o.ig_media_id} className="border border-[#2a2a2a] bg-[#141414] p-3 flex gap-3">
+                <div key={o.ig_media_id} className="border border-[#2a2a2a] bg-[#1a1a1a] rounded-lg p-4 flex gap-3">
                   <Thumbnail url={o.thumbnail_url} />
                   <div className="flex flex-col justify-between min-w-0 flex-1">
                     <div>
                       <p className="text-xs text-zinc-200 leading-snug line-clamp-2 mb-1">
                         {o.caption_preview.slice(0, 80)}
                       </p>
-                      <p className="text-[11px] text-zinc-400 leading-relaxed line-clamp-3">
+                      <p className="text-[11px] text-zinc-400 leading-relaxed line-clamp-2">
                         {o.reason}
                       </p>
                     </div>
@@ -135,11 +135,11 @@ export default function InsightsPanel() {
 
           {/* Patterns */}
           <div>
-            <p className="text-[10px] uppercase tracking-[0.15em] text-zinc-600 mb-3">Patterns</p>
+            <p className="text-[10px] uppercase tracking-[0.15em] text-zinc-500 mb-3">Patterns</p>
             <ul className="space-y-2">
               {data.patterns.map((p, i) => (
-                <li key={i} className="flex gap-3 text-sm text-zinc-400 leading-relaxed">
-                  <span className="text-zinc-700 shrink-0 tabular-nums">{i + 1}.</span>
+                <li key={i} className="flex gap-3 text-sm text-zinc-300 leading-relaxed line-clamp-2">
+                  <span className="text-zinc-600 shrink-0 tabular-nums">{i + 1}.</span>
                   {p}
                 </li>
               ))}
@@ -147,9 +147,9 @@ export default function InsightsPanel() {
           </div>
 
           {/* Recommendation */}
-          <div className="border-l-2 border-amber-400 pl-4 py-1">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-zinc-600 mb-2">This Week</p>
-            <p className="text-sm text-zinc-200 leading-relaxed">{data.recommendation}</p>
+          <div className="bg-amber-950/30 border-l-2 border-amber-400 p-4 rounded-r-lg">
+            <p className="text-[10px] uppercase tracking-[0.15em] text-zinc-500 mb-2">This Week</p>
+            <p className="text-sm text-zinc-200 leading-relaxed line-clamp-4">{data.recommendation}</p>
           </div>
 
         </div>
