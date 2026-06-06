@@ -2,6 +2,29 @@
 
 import { useState, useEffect, useCallback } from "react";
 
+function Thumbnail({ url }: { url: string | null }) {
+  const [failed, setFailed] = useState(false);
+
+  if (!url || failed) {
+    return (
+      <div className="w-16 aspect-video rounded bg-zinc-800 flex items-center justify-center shrink-0">
+        <svg className="w-4 h-4 text-zinc-600" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M6 4l6 4-6 4V4z" />
+        </svg>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={url}
+      alt=""
+      className="w-16 aspect-video object-cover rounded shrink-0"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 type Outlier = {
   ig_media_id: string;
   caption_preview: string;
@@ -83,23 +106,28 @@ export default function InsightsPanel() {
             <p className="text-[10px] uppercase tracking-[0.15em] text-zinc-600 mb-3">Top Performers</p>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               {data.outliers.map((o) => (
-                <div key={o.ig_media_id} className="border border-[#2a2a2a] bg-[#141414] p-4 flex flex-col gap-2">
-                  <p className="text-xs text-zinc-200 leading-snug line-clamp-3">
-                    {o.caption_preview.slice(0, 80)}
-                  </p>
-                  <p className="text-[11px] text-zinc-400 leading-relaxed flex-1">
-                    {o.reason}
-                  </p>
-                  {o.permalink && (
-                    <a
-                      href={o.permalink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors self-end"
-                    >
-                      View on Instagram ↗
-                    </a>
-                  )}
+                <div key={o.ig_media_id} className="border border-[#2a2a2a] bg-[#141414] p-3 flex gap-3">
+                  <Thumbnail url={o.thumbnail_url} />
+                  <div className="flex flex-col justify-between min-w-0 flex-1">
+                    <div>
+                      <p className="text-xs text-zinc-200 leading-snug line-clamp-2 mb-1">
+                        {o.caption_preview.slice(0, 80)}
+                      </p>
+                      <p className="text-[11px] text-zinc-400 leading-relaxed line-clamp-3">
+                        {o.reason}
+                      </p>
+                    </div>
+                    {o.permalink && (
+                      <a
+                        href={o.permalink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors self-end mt-2"
+                      >
+                        View on Instagram ↗
+                      </a>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
