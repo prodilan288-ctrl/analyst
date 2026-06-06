@@ -150,11 +150,31 @@ export async function GET() {
       return NextResponse.json({ error: "No structured output returned" }, { status: 500 });
     }
 
+    // Enrich outliers with thumbnail_url and permalink from the reels table
+    const mediaIds = response.parsed_output.outliers.map((o) => o.ig_media_id);
+    const { data: reelMeta } = await supabase
+      .from("reels")
+      .select("ig_media_id, thumbnail_url, permalink")
+      .in("ig_media_id", mediaIds);
+
+    const metaMap = Object.fromEntries(
+      (reelMeta ?? []).map((r) => [r.ig_media_id, r]),
+    );
+
+    const enrichedPayload = {
+      ...response.parsed_output,
+      outliers: response.parsed_output.outliers.map((o) => ({
+        ...o,
+        thumbnail_url: metaMap[o.ig_media_id]?.thumbnail_url ?? null,
+        permalink: metaMap[o.ig_media_id]?.permalink ?? null,
+      })),
+    };
+
     await supabase
       .from("insights_cache")
-      .insert({ generated_at: new Date().toISOString(), payload: response.parsed_output });
+      .insert({ generated_at: new Date().toISOString(), payload: enrichedPayload });
 
-    return NextResponse.json(response.parsed_output);
+    return NextResponse.json(enrichedPayload);
   } catch (e) {
     return NextResponse.json(
       { error: "Anthropic request failed", detail: e instanceof Error ? e.message : String(e) },

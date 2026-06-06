@@ -6,6 +6,8 @@ type Outlier = {
   ig_media_id: string;
   caption_preview: string;
   reason: string;
+  thumbnail_url: string | null;
+  permalink: string | null;
 };
 
 type InsightsData = {
@@ -81,9 +83,36 @@ export default function InsightsPanel() {
             <p className="text-[10px] uppercase tracking-[0.15em] text-zinc-600 mb-3">Top Performers</p>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               {data.outliers.map((o) => (
-                <div key={o.ig_media_id} className="border border-[#2a2a2a] bg-[#141414] p-4">
-                  <p className="text-xs text-zinc-300 leading-snug mb-2 line-clamp-2">{o.caption_preview}</p>
-                  <p className="text-[11px] text-zinc-500 leading-relaxed">{o.reason}</p>
+                <div key={o.ig_media_id} className="border border-[#2a2a2a] bg-[#141414] p-3 flex gap-3">
+                  {o.thumbnail_url && (
+                    <img
+                      src={o.thumbnail_url}
+                      alt=""
+                      className="w-20 aspect-video object-cover shrink-0 bg-zinc-800"
+                    />
+                  )}
+                  <div className="flex flex-col justify-between min-w-0 flex-1">
+                    <div>
+                      <p className="text-xs text-zinc-300 leading-snug mb-1 line-clamp-2">
+                        {o.caption_preview.slice(0, 50)}
+                      </p>
+                      <p className="text-[11px] text-zinc-500 leading-relaxed line-clamp-4">
+                        {o.reason}
+                      </p>
+                    </div>
+                    {o.permalink && (
+                      <div className="flex justify-end mt-2">
+                        <a
+                          href={o.permalink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors"
+                        >
+                          View on Instagram ↗
+                        </a>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
