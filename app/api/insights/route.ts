@@ -94,7 +94,7 @@ export async function GET() {
     const meta = r.reels as unknown as { ig_media_id: string; caption: string | null; posted_at: string | null; format: string | null; funnel_stage: string | null };
     return {
       ig_media_id: meta.ig_media_id,
-      caption: (meta.caption ?? "").slice(0, 60),
+      caption: (meta.caption ?? "").slice(0, 80),
       posted_at: meta.posted_at?.split("T")[0] ?? null,
       views: r.views,
       reach: r.reach,
