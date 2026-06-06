@@ -176,8 +176,16 @@ export async function GET() {
 
     return NextResponse.json(enrichedPayload);
   } catch (e) {
+    const errObj = e as Record<string, unknown>;
+    const detail = {
+      message: e instanceof Error ? e.message : String(e),
+      status: errObj?.status,
+      error: errObj?.error,
+      stack: e instanceof Error ? e.stack : undefined,
+    };
+    console.error("Anthropic error:", JSON.stringify(detail, null, 2));
     return NextResponse.json(
-      { error: "Anthropic request failed", detail: e instanceof Error ? e.message : String(e) },
+      { error: "Anthropic request failed", detail },
       { status: 500 },
     );
   }
