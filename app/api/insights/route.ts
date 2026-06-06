@@ -34,7 +34,7 @@ ICP SIGNALS IN ORDER OF IMPORTANCE:
 WHAT CONVERTS ARTISTS (prioritize these in analysis):
 - Placement proof content (MOFU) — this is the real moat
 - Collabs with named producers/artists in captions
-- Genre-specific CTAs ('comment RNB/PAIN/dark rnb if this fits')
+- Genre-specific CTAs that filter for serious artists — BUT avoid 'comment X if you feel this' style CTAs as these attract broke artists looking for free beats, not buyers. Better CTAs direct to DM or ask about their project/budget.
 - Story time content (Slovakia → US arc builds rare trust)
 - Educational content aimed at artists (not producers)
 
