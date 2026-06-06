@@ -197,11 +197,11 @@ export async function GET() {
       }
     }
 
-    // Enrich outliers with thumbnail_url and permalink from the reels table
+    // Enrich outliers with caption, thumbnail_url, and permalink from the reels table
     const mediaIds = parsed.outliers.map((o) => o.ig_media_id);
     const { data: reelMeta } = await supabase
       .from("reels")
-      .select("ig_media_id, thumbnail_url, permalink")
+      .select("ig_media_id, caption, thumbnail_url, permalink")
       .in("ig_media_id", mediaIds);
 
     const metaMap = Object.fromEntries(
@@ -212,11 +212,13 @@ export async function GET() {
       ...parsed,
       outliers: parsed.outliers.map((o) => ({
         ...o,
+        caption_preview: (metaMap[o.ig_media_id]?.caption ?? o.caption_preview ?? "").slice(0, 80),
         thumbnail_url: metaMap[o.ig_media_id]?.thumbnail_url ?? null,
         permalink: metaMap[o.ig_media_id]?.permalink ?? null,
       })),
     };
 
+    await supabase.from("insights_cache").delete().neq("id", "00000000-0000-0000-0000-000000000000");
     await supabase
       .from("insights_cache")
       .insert({ generated_at: new Date().toISOString(), payload: enrichedPayload });
