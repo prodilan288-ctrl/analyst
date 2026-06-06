@@ -109,15 +109,19 @@ export async function GET() {
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { data: cached } = await supabase
     .from("insights_cache")
-    .select("payload")
+    .select("payload, generated_at")
     .gte("generated_at", cutoff)
     .order("generated_at", { ascending: false })
     .limit(1)
     .single();
 
   if (cached) {
+    console.log("Cache hit - returning cached insights");
+    console.log("generated_at:", cached.generated_at);
     return NextResponse.json(cached.payload);
   }
+
+  console.log("Cache miss - calling API");
 
   const client = new Anthropic({ apiKey });
 
@@ -136,6 +140,8 @@ export async function GET() {
         format: zodOutputFormat(InsightsSchema),
       },
     });
+
+    console.log("Tokens — input:", response.usage.input_tokens, "output:", response.usage.output_tokens);
 
     if (!response.parsed_output) {
       return NextResponse.json({ error: "No structured output returned" }, { status: 500 });
