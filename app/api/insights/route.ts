@@ -102,6 +102,20 @@ export async function GET() {
     };
   });
 
+  // Return cached insights if generated within the last 24 hours
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { data: cached } = await supabase
+    .from("insights_cache")
+    .select("payload")
+    .gte("generated_at", cutoff)
+    .order("generated_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (cached) {
+    return NextResponse.json(cached.payload);
+  }
+
   const client = new Anthropic({ apiKey });
 
   try {
@@ -123,6 +137,10 @@ export async function GET() {
     if (!response.parsed_output) {
       return NextResponse.json({ error: "No structured output returned" }, { status: 500 });
     }
+
+    await supabase
+      .from("insights_cache")
+      .insert({ generated_at: new Date().toISOString(), payload: response.parsed_output });
 
     return NextResponse.json(response.parsed_output);
   } catch (e) {
