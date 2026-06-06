@@ -51,7 +51,9 @@ STANDING RULES:
 - Trial reels test viral formats on non-followers before feed
 - Bio leads with placements: Hunxho, Stunna Gambino, Nelly NLMB
 
-IMPORTANT CONTEXT: The historical reels in the database were posted BEFORE this content strategy was implemented. Do not judge old content against these rules. Instead, identify which old reels accidentally followed these principles and performed well — those are the most valuable signals.`;
+IMPORTANT CONTEXT: The historical reels in the database were posted BEFORE this content strategy was implemented. Do not judge old content against these rules. Instead, identify which old reels accidentally followed these principles and performed well — those are the most valuable signals.
+
+IMPORTANT: The reason field for each outlier must be a clean, human-readable sentence explaining why this reel is a top performer. Example: 'Highest saves (10) with strong watch time — direct collab CTA with named producer signals serious artist interest.' Never output raw numbers, CSV data, or structured data in the reason field.`;
 
 const USER_PROMPT = `Analyze this reel performance data and return insights:
 - outliers: max 3 reels that show the strongest ICP signals based on the criteria above
@@ -150,8 +152,53 @@ export async function GET() {
       return NextResponse.json({ error: "No structured output returned" }, { status: 500 });
     }
 
+    // Validate reason fields — flag garbled output (CSV-like: 3+ commas, or mostly numeric)
+    const isGarbled = (s: string) =>
+      (s.match(/,/g) ?? []).length >= 3 || /^[\d\s,\.]+$/.test(s.trim());
+
+    const garbledReasons = response.parsed_output.outliers.filter((o) => isGarbled(o.reason));
+
+    let parsed = response.parsed_output;
+
+    if (garbledReasons.length > 0) {
+      console.warn(`Garbled reason fields detected (${garbledReasons.length}), retrying with stricter prompt`);
+
+      const retry = await client.messages.parse({
+        model: "claude-haiku-4-5",
+        max_tokens: 1024,
+        system: SYSTEM,
+        messages: [
+          {
+            role: "user",
+            content: `${USER_PROMPT}\n${JSON.stringify(reelData, null, 2)}`,
+          },
+          {
+            role: "assistant",
+            content: JSON.stringify(response.parsed_output),
+          },
+          {
+            role: "user",
+            content: "The reason fields for some outliers contain raw data instead of human-readable explanations. Rewrite every reason field as a clear sentence describing why the reel is a top performer, referencing the actual metrics (saves, watch time, comments). No numbers-only output, no CSV, no structured data.",
+          },
+        ],
+        output_config: {
+          format: zodOutputFormat(InsightsSchema),
+        },
+      });
+
+      if (retry.parsed_output) {
+        const stillGarbled = retry.parsed_output.outliers.filter((o) => isGarbled(o.reason));
+        if (stillGarbled.length > 0) {
+          console.warn("Retry still produced garbled reasons — caching anyway");
+        } else {
+          console.log("Retry produced clean reasons");
+          parsed = retry.parsed_output;
+        }
+      }
+    }
+
     // Enrich outliers with thumbnail_url and permalink from the reels table
-    const mediaIds = response.parsed_output.outliers.map((o) => o.ig_media_id);
+    const mediaIds = parsed.outliers.map((o) => o.ig_media_id);
     const { data: reelMeta } = await supabase
       .from("reels")
       .select("ig_media_id, thumbnail_url, permalink")
@@ -162,8 +209,8 @@ export async function GET() {
     );
 
     const enrichedPayload = {
-      ...response.parsed_output,
-      outliers: response.parsed_output.outliers.map((o) => ({
+      ...parsed,
+      outliers: parsed.outliers.map((o) => ({
         ...o,
         thumbnail_url: metaMap[o.ig_media_id]?.thumbnail_url ?? null,
         permalink: metaMap[o.ig_media_id]?.permalink ?? null,
