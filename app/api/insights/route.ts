@@ -141,7 +141,10 @@ export async function GET() {
       },
     });
 
-    console.log("Tokens — input:", response.usage.input_tokens, "output:", response.usage.output_tokens);
+    console.log("Model:", response.model);
+    console.log("Input tokens:", response.usage.input_tokens);
+    console.log("Output tokens:", response.usage.output_tokens);
+    console.log("Stop reason:", response.stop_reason);
 
     if (!response.parsed_output) {
       return NextResponse.json({ error: "No structured output returned" }, { status: 500 });
