@@ -85,7 +85,10 @@ export async function GET(request: NextRequest) {
   const mediaData = await mediaRes.json();
   const mediaErr = mediaData.error ?? null;
   if (mediaErr) errors.push(`media [${mediaRes.status}]: ${JSON.stringify(mediaErr)}`);
-  const reels = (mediaData.data ?? []).filter((m: { media_type: string }) => m.media_type === "VIDEO");
+  const reels = (mediaData.data ?? []).filter(
+    (m: { media_type: string; media_product_type?: string }) =>
+      m.media_product_type === "REELS" || m.media_type === "VIDEO",
+  );
 
   let reelsSynced = 0;
 
