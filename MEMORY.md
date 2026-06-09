@@ -1,0 +1,5 @@
+- [Project overview](memory/project-analyst-overview.md) — prod.ilan_ analytics dashboard: stack, modules, build status, what's done
+- [User profile](memory/user-ilan.md) — who Ilan is, content strategy, ICP, what converts artists
+- [Insights API](memory/project-insights-api.md) — Anthropic integration, caching, enrichment, known issues
+- [Sync route](memory/project-sync-route.md) — Instagram Graph API sync, cron, what was debugged
+- [Feedback & preferences](memory/feedback-general.md) — how Ilan likes to work, patterns to follow
